@@ -1,0 +1,21 @@
+CONSULTA DE PRECIOS — APP PARA iPHONE
+
+Este paquete contiene:
+- index.html: la aplicación con los 5,732 productos.
+- manifest.webmanifest: configuración para instalarla como app.
+- service-worker.js: permite funcionamiento tipo app y caché.
+- icon-180/192/512.png: iconos.
+
+IMPORTANTE:
+Para que iPhone permita "Añadir a pantalla de inicio" como una web-app,
+estos archivos deben estar publicados en una dirección HTTPS.
+
+Una vez publicada:
+1. Abre la dirección en Safari.
+2. Toca Compartir.
+3. Selecciona "Añadir a pantalla de inicio".
+4. Pon "Consulta de Precios".
+5. Toca Añadir.
+
+La aplicación usa la base de productos incorporada en index.html y no necesita
+Excel para hacer las consultas.
