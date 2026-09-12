@@ -1,21 +1,13 @@
-CONSULTA DE PRECIOS — APP PARA iPHONE
+BALBIN – PRESUPUESTO
 
-Este paquete contiene:
-- index.html: la aplicación con los 5,732 productos.
-- manifest.webmanifest: configuración para instalarla como app.
-- service-worker.js: permite funcionamiento tipo app y caché.
-- icon-180/192/512.png: iconos.
+El archivo precios.xlsx es el EXCEL MAESTRO.
+Para actualizar los precios/productos para TODOS los dispositivos:
+1. Reemplazar precios.xlsx en el repositorio de GitHub.
+2. Mantener las columnas de la primera hoja:
+   PRODUCTO, PRECIO, PRECIOF, LABORATORI
+3. Abrir la aplicación y pulsar "Actualizar precios".
 
-IMPORTANTE:
-Para que iPhone permita "Añadir a pantalla de inicio" como una web-app,
-estos archivos deben estar publicados en una dirección HTTPS.
+PRECIO = caja
+PRECIOF = unidad
 
-Una vez publicada:
-1. Abre la dirección en Safari.
-2. Toca Compartir.
-3. Selecciona "Añadir a pantalla de inicio".
-4. Pon "Consulta de Precios".
-5. Toca Añadir.
-
-La aplicación usa la base de productos incorporada en index.html y no necesita
-Excel para hacer las consultas.
+No es necesario modificar index.html para una actualización normal.

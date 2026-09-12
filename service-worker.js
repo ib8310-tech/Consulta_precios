@@ -1,11 +1,9 @@
-const CACHE='consulta-precios-v1';
-const FILES=['./','./index.html','./manifest.webmanifest','./icon-180.png','./icon-192.png','./icon-512.png'];
-self.addEventListener('install',event=>{
-  event.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()));
-});
-self.addEventListener('activate',event=>{
-  event.waitUntil(self.clients.claim());
-});
-self.addEventListener('fetch',event=>{
-  event.respondWith(caches.match(event.request).then(r=>r||fetch(event.request)));
+const CACHE='balbin-presupuesto-v1';
+self.addEventListener('install',e=>e.waitUntil(self.skipWaiting()));
+self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
+self.addEventListener('fetch',e=>{
+  if(e.request.method!=='GET') return;
+  const u=new URL(e.request.url);
+  if(u.pathname.endsWith('/precios.xlsx')) return; // always get the master list from the network
+  e.respondWith(fetch(e.request).then(r=>{const c=r.clone();caches.open(CACHE).then(x=>x.put(e.request,c));return r}).catch(()=>caches.match(e.request)));
 });
