@@ -11,3 +11,5 @@ PRECIO = caja
 PRECIOF = unidad
 
 No es necesario modificar index.html para una actualización normal.
+
+Regla de precios: si PRECIOF (fracción/unidad) es 0, el producto se maneja por CAJA y se utiliza PRECIO como precio aplicable.

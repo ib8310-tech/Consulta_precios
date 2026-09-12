@@ -21,7 +21,7 @@ button.primary{background:#1261A0;color:#fff}button.danger{background:#fff0f0;co
 .card{background:#fff;border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:0 2px 8px #0000000c}.name{font-weight:800;font-size:17px}.lab{font-size:13px;color:#68737d;margin:4px 0 10px}
 .prices{display:flex;gap:8px;margin-bottom:12px}.price{flex:1;background:#f5f8fb;border-radius:10px;padding:8px}.price span{font-size:12px;color:#667}.price b{display:block;font-size:16px;margin-top:2px}
 .row{display:flex;gap:8px;align-items:center}.qty{width:70px;height:42px;border:1px solid #d3dbe3;border-radius:10px;text-align:center;font-size:17px}
-.mode{display:flex;flex:1}.mode button{flex:1;border:1px solid #d3dbe3;border-radius:10px;box-shadow:none;background:#f8fafc;color:#49535c}.mode button.active{background:#1261A0;color:#fff;border-color:#1261A0}
+.mode{display:flex;flex:1}.mode button{flex:1;border:1px solid #d3dbe3;border-radius:10px;box-shadow:none;background:#f8fafc;color:#49535c}.mode button.active{background:#1261A0;color:#fff;border-color:#1261A0}.mode button:disabled{opacity:.45;cursor:not-allowed}
 .empty{text-align:center;padding:28px 10px;color:#6b7580}.order{margin-top:18px}.orderhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.order h2{font-size:19px;margin:0}
 .item{background:#fff;border-radius:14px;padding:11px 12px;margin-bottom:8px}.itemtop{display:flex;justify-content:space-between;gap:10px}.itemname{font-weight:700}.sub{font-size:13px;color:#667;margin-top:3px}
 .total{background:#17202a;color:#fff;border-radius:16px;padding:15px;margin-top:10px;display:flex;justify-content:space-between;font-size:20px;font-weight:800}.share{width:100%;margin-top:10px;background:#16a34a;color:#fff}
@@ -97,20 +97,20 @@ function render(){
   matches=products.filter(p=>norm(p.producto).includes(q)).slice(0,80);
   if(!matches.length){$("results").innerHTML='<div class="empty">No encontré productos con esa búsqueda.</div>';return;}
   $("results").innerHTML=matches.map((p,i)=>{
-    const m=modes.get(p.producto)||"unidad";
+    const m=(Number(p.precioUnidad)===0) ? "caja" : (modes.get(p.producto)||"unidad");
     return `<div class="card"><div class="name">${esc(p.producto.replace(/^\./,""))}</div>
     <div class="lab">${esc(p.laboratorio||"Laboratorio no indicado")}</div>
-    <div class="prices"><div class="price"><span>UNIDAD</span><b>${money(p.precioUnidad)}</b></div>
+    <div class="prices"><div class="price"><span>${Number(p.precioUnidad)===0?"PRECIO": "UNIDAD"}</span><b>${money(Number(p.precioUnidad)===0 ? p.precioCaja : p.precioUnidad)}</b></div>
     <div class="price"><span>CAJA</span><b>${money(p.precioCaja)}</b></div></div>
     <div class="row"><input class="qty" id="q${i}" type="number" min="1" step="1" value="1">
-    <div class="mode"><button class="${m==="unidad"?"active":""}" onclick="setMode(${i},'unidad')">Unidad</button>
+    <div class="mode"><button class="${m==="unidad"?"active":""}" ${Number(p.precioUnidad)===0?"disabled":""} onclick="setMode(${i},'unidad')">Unidad</button>
     <button class="${m==="caja"?"active":""}" onclick="setMode(${i},'caja')">Caja</button></div>
     <button class="primary small" onclick="add(${i})">Agregar</button></div></div>`;
   }).join("");
 }
 function setMode(i,m){modes.set(matches[i].producto,m);render();}
 function add(i){
-  const p=matches[i],m=modes.get(p.producto)||"unidad",q=Math.max(1,parseInt($("q"+i).value||"1",10));
+  const p=matches[i],m=(Number(p.precioUnidad)===0) ? "caja" : (modes.get(p.producto)||"unidad"),q=Math.max(1,parseInt($("q"+i).value||"1",10));
   const price=m==="caja"?p.precioCaja:p.precioUnidad,key=p.producto+"|"+m;
   const x=order.find(v=>v.key===key);
   if(x)x.qty+=q;else order.push({key,producto:p.producto,laboratorio:p.laboratorio,mode:m,qty:q,price});
