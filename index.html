@@ -20,11 +20,11 @@ header{background:#1261A0;color:#fff;padding:16px;position:sticky;top:0;z-index:
 button.primary{background:#1261A0;color:#fff}button.danger{background:#fff0f0;color:#b42318}button.small{padding:8px 10px;font-size:14px}
 .card{background:#fff;border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:0 2px 8px #0000000c}.name{font-weight:800;font-size:17px}.lab{font-size:13px;color:#68737d;margin:4px 0 10px}
 .prices{display:flex;gap:8px;margin-bottom:12px}.price{flex:1;background:#f5f8fb;border-radius:10px;padding:8px}.price span{font-size:12px;color:#667}.price b{display:block;font-size:16px;margin-top:2px}
-.row{display:flex;gap:8px;align-items:center}.qty{width:70px;height:42px;border:1px solid #d3dbe3;border-radius:10px;text-align:center;font-size:17px}
+.row{display:flex;gap:8px;align-items:center}.qty{width:58px;height:42px;border:1px solid #d3dbe3;border-radius:10px;text-align:center;font-size:17px}.stepper{display:flex;align-items:center;gap:5px}.stepper button{width:38px;height:42px;padding:0;font-size:22px;line-height:1;box-shadow:none;border:1px solid #d3dbe3}.stepper .qty{border:1px solid #d3dbe3}
 .mode{display:flex;flex:1}.mode button{flex:1;border:1px solid #d3dbe3;border-radius:10px;box-shadow:none;background:#f8fafc;color:#49535c}.mode button.active{background:#1261A0;color:#fff;border-color:#1261A0}.mode button:disabled{opacity:.45;cursor:not-allowed}
 .empty{text-align:center;padding:28px 10px;color:#6b7580}.order{margin-top:18px}.orderhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.order h2{font-size:19px;margin:0}
 .item{background:#fff;border-radius:14px;padding:11px 12px;margin-bottom:8px}.itemtop{display:flex;justify-content:space-between;gap:10px}.itemname{font-weight:700}.sub{font-size:13px;color:#667;margin-top:3px}
-.total{background:#17202a;color:#fff;border-radius:16px;padding:15px;margin-top:10px;display:flex;justify-content:space-between;font-size:20px;font-weight:800}.share{width:100%;margin-top:10px;background:#16a34a;color:#fff}
+.total{background:#17202a;color:#fff;border-radius:16px;padding:15px;margin-top:10px;display:flex;justify-content:space-between;font-size:20px;font-weight:800}.share{width:100%;margin-top:10px;background:#16a34a;color:#fff}.history-card{background:#fff;border-radius:14px;padding:12px;margin-bottom:8px}.history-top{display:flex;justify-content:space-between;gap:8px}.history-num{font-weight:800}.history-date{font-size:12px;color:#667}.history-total{font-weight:800}.status-pill{display:inline-block;padding:4px 8px;border-radius:12px;font-size:12px;font-weight:700;background:#fff4d6;color:#8a5a00}.status-sale{background:#e9f7ee;color:#137333}.status-cancel{background:#fff0f0;color:#b42318}
 .badge{display:inline-block;background:#e9f7ee;color:#137333;border-radius:20px;padding:4px 8px;font-size:12px;font-weight:700}
 </style>
 </head>
@@ -44,6 +44,17 @@ button.primary{background:#1261A0;color:#fff}button.danger{background:#fff0f0;co
   <div id="status" class="status">Cargando lista maestra…</div>
   <div id="results"></div>
 
+
+  <section class="order" id="historySection">
+    <div class="orderhead"><h2>📚 Historial</h2><button id="clearHistory" class="danger small">Borrar historial</button></div>
+    <div class="actions">
+      <button class="small" id="filterAll">Todos</button>
+      <button class="small" id="filterPending">Pendientes</button>
+      <button class="small" id="filterSales">Ventas</button>
+      <button class="small" id="filterCanceled">Anulados</button>
+    </div>
+    <div id="historyItems"><div class="empty">No hay presupuestos guardados.</div></div>
+  </section>
   <section class="order">
     <div class="orderhead">
       <h2>🛒 Cotización</h2>
@@ -51,7 +62,7 @@ button.primary{background:#1261A0;color:#fff}button.danger{background:#fff0f0;co
     </div>
     <div id="orderItems"><div class="empty">Agrega productos para empezar.</div></div>
     <div id="total" class="total"><span>TOTAL</span><span>S/ 0.00</span></div>
-    <button id="share" class="share">📲 Compartir cotización</button>
+    <button id="saveQuote" class="primary share">💾 Guardar presupuesto</button><button id="share" class="share">📲 Compartir</button>
   </section>
 </main>
 
@@ -65,6 +76,54 @@ const money=n=>"S/ "+Number(n||0).toLocaleString("es-PE",{minimumFractionDigits:
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const num=v=>{if(typeof v==="number")return v;let n=parseFloat(String(v??"").replace(/S\/|,/g,"").trim());return Number.isFinite(n)?n:0};
 
+
+let history=JSON.parse(localStorage.getItem("balbin_presupuestos_v1")||"[]");
+let historyFilter="todos";
+function nextQuoteNumber(){
+  const n=Number(localStorage.getItem("balbin_quote_number")||0)+1;
+  localStorage.setItem("balbin_quote_number",String(n));
+  return "P-"+String(n).padStart(6,"0");
+}
+function saveHistory(){localStorage.setItem("balbin_presupuestos_v1",JSON.stringify(history));}
+function saveQuote(){
+  if(!order.length){alert("Primero agrega productos a la cotización.");return;}
+  const total=order.reduce((s,x)=>s+x.qty*x.price,0);
+  const q={id:nextQuoteNumber(),date:new Date().toISOString(),items:order.map(x=>({...x})),total,status:"PENDIENTE"};
+  history.unshift(q); saveHistory(); renderHistory();
+  order=[]; renderOrder(); $("search").value=""; matches=[]; $("results").innerHTML='<div class="empty">Presupuesto guardado. Puedes empezar el siguiente.</div>';
+  alert("Presupuesto "+q.id+" guardado correctamente.");
+}
+function fmtDate(iso){return new Date(iso).toLocaleString("es-PE",{dateStyle:"short",timeStyle:"short"});}
+function renderHistory(){
+  const list=history.filter(q=>historyFilter==="todos" || q.status===historyFilter);
+  if(!list.length){$("historyItems").innerHTML='<div class="empty">No hay presupuestos en este filtro.</div>';return;}
+  $("historyItems").innerHTML=list.map(q=>{
+    const cls=q.status==="VENTA"?"status-sale":q.status==="ANULADO"?"status-cancel":"";
+    return `<div class="history-card">
+      <div class="history-top"><div><div class="history-num">${q.id}</div><div class="history-date">${fmtDate(q.date)}</div></div><div class="history-total">${money(q.total)}</div></div>
+      <div style="margin-top:8px"><span class="status-pill ${cls}">${q.status}</span> · ${q.items.length} línea(s)</div>
+      <div class="actions" style="margin-top:8px">
+        <button class="small" onclick="viewQuote('${q.id}')">Ver</button>
+        ${q.status==="PENDIENTE"?`<button class="small primary" onclick="markSale('${q.id}')">✓ Convertir en venta</button><button class="small danger" onclick="cancelQuote('${q.id}')">Anular</button>`:""}
+        <button class="small" onclick="shareSaved('${q.id}')">📲 Compartir</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+function viewQuote(id){
+  const q=history.find(x=>x.id===id); if(!q)return;
+  const detail=q.items.map(x=>`${x.producto.replace(/^\./,"")} — ${x.qty} ${x.mode} — ${money(x.qty*x.price)}`).join("\n");
+  alert(`${q.id}\n${fmtDate(q.date)}\nEstado: ${q.status}\n\n${detail}\n\nTOTAL: ${money(q.total)}`);
+}
+function markSale(id){const q=history.find(x=>x.id===id);if(!q)return;if(confirm("¿Convertir "+id+" en venta?")){q.status="VENTA";saveHistory();renderHistory();}}
+function cancelQuote(id){const q=history.find(x=>x.id===id);if(!q)return;if(confirm("¿Anular "+id+"?")){q.status="ANULADO";saveHistory();renderHistory();}}
+async function shareSaved(id){
+ const q=history.find(x=>x.id===id);if(!q)return;
+ const lines=q.items.map(x=>`${x.producto.replace(/^\./,"")} — ${x.qty} ${x.mode} — ${money(x.qty*x.price)}`);
+ const text=`BALBIN – PRESUPUESTO\n${q.id} · ${fmtDate(q.date)} · ${q.status}\n\n${lines.join("\n")}\n\nTOTAL: ${money(q.total)}`;
+ if(navigator.share){try{await navigator.share({title:"Balbin – Presupuesto "+q.id,text})}catch(e){}}else{window.open("https://wa.me/?text="+encodeURIComponent(text),"_blank")}
+}
+function setHistoryFilter(f){historyFilter=f;renderHistory();}
 async function loadMaster(){
   $("status").textContent="🔄 Leyendo Excel maestro…";
   try{
@@ -102,19 +161,21 @@ function render(){
     <div class="lab">${esc(p.laboratorio||"Laboratorio no indicado")}</div>
     <div class="prices"><div class="price"><span>${Number(p.precioUnidad)===0?"PRECIO": "UNIDAD"}</span><b>${money(Number(p.precioUnidad)===0 ? p.precioCaja : p.precioUnidad)}</b></div>
     <div class="price"><span>CAJA</span><b>${money(p.precioCaja)}</b></div></div>
-    <div class="row"><input class="qty" id="q${i}" type="number" min="1" step="1" value="1">
+    <div class="row"><div class="stepper"><button onclick="stepQty(${i},-1)" aria-label="Disminuir">−</button><input class="qty" id="q${i}" type="number" min="1" step="1" value="1"><button onclick="stepQty(${i},1)" aria-label="Aumentar">+</button></div>
     <div class="mode"><button class="${m==="unidad"?"active":""}" ${Number(p.precioUnidad)===0?"disabled":""} onclick="setMode(${i},'unidad')">Unidad</button>
     <button class="${m==="caja"?"active":""}" onclick="setMode(${i},'caja')">Caja</button></div>
     <button class="primary small" onclick="add(${i})">Agregar</button></div></div>`;
   }).join("");
 }
 function setMode(i,m){modes.set(matches[i].producto,m);render();}
+function stepQty(i,d){const el=$("q"+i);el.value=Math.max(1,(parseInt(el.value||"1",10)+d));}
 function add(i){
   const p=matches[i],m=(Number(p.precioUnidad)===0) ? "caja" : (modes.get(p.producto)||"unidad"),q=Math.max(1,parseInt($("q"+i).value||"1",10));
   const price=m==="caja"?p.precioCaja:p.precioUnidad,key=p.producto+"|"+m;
   const x=order.find(v=>v.key===key);
   if(x)x.qty+=q;else order.push({key,producto:p.producto,laboratorio:p.laboratorio,mode:m,qty:q,price});
   renderOrder();
+  $("search").value=""; matches=[]; $("results").innerHTML='<div class="empty">Producto agregado. Busca el siguiente producto.</div>';
 }
 function renderOrder(){
   if(!order.length){$("orderItems").innerHTML='<div class="empty">Agrega productos para empezar.</div>';$("total").innerHTML="<span>TOTAL</span><span>S/ 0.00</span>";return;}
@@ -126,7 +187,7 @@ function chg(i,d){order[i].qty+=d;if(order[i].qty<=0)order.splice(i,1);renderOrd
 function del(i){order.splice(i,1);renderOrder()}
 function clearAll(){$("search").value="";order=[];modes.clear();render();renderOrder();window.scrollTo({top:0,behavior:"smooth"})}
 $("search").addEventListener("input",render);
-$("clear").onclick=clearAll;
+$("clear").onclick=clearAll;$("saveQuote").onclick=saveQuote;$("filterAll").onclick=()=>setHistoryFilter("todos");$("filterPending").onclick=()=>setHistoryFilter("PENDIENTE");$("filterSales").onclick=()=>setHistoryFilter("VENTA");$("filterCanceled").onclick=()=>setHistoryFilter("ANULADO");$("clearHistory").onclick=()=>{if(confirm("¿Borrar todo el historial de este dispositivo?")){history=[];localStorage.removeItem("balbin_presupuestos_v1");renderHistory();}};
 $("emptyOrder").onclick=()=>{order=[];renderOrder()};
 $("refresh").onclick=loadMaster;
 $("share").onclick=async()=>{
@@ -136,7 +197,7 @@ $("share").onclick=async()=>{
  const text="BALBIN – PRESUPUESTO\n\n"+lines.join("\n")+"\n\nTOTAL: "+money(total);
  if(navigator.share){try{await navigator.share({title:"Balbin – Presupuesto",text})}catch(e){}}else{window.open("https://wa.me/?text="+encodeURIComponent(text),"_blank")}
 };
-loadMaster();renderOrder();
+loadMaster();renderOrder();renderHistory();
 </script>
 </body>
 </html>
