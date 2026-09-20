@@ -1,15 +1,7 @@
-BALBIN – PRESUPUESTO
+BALBIN_FARMATODO — Consulta de precios
 
-El archivo precios.xlsx es el EXCEL MAESTRO.
-Para actualizar los precios/productos para TODOS los dispositivos:
-1. Reemplazar precios.xlsx en el repositorio de GitHub.
-2. Mantener las columnas de la primera hoja:
-   PRODUCTO, PRECIO, PRECIOF, LABORATORI
-3. Abrir la aplicación y pulsar "Actualizar precios".
+Flujo:
+Buscar producto → ver Producto / Unidad / Caja / Laboratorio → OK → pantalla limpia → nueva búsqueda.
 
-PRECIO = caja
-PRECIOF = unidad
-
-No es necesario modificar index.html para una actualización normal.
-
-Regla de precios: si PRECIOF (fracción/unidad) es 0, el producto se maneja por CAJA y se utiliza PRECIO como precio aplicable.
+Se mantiene precios.xlsx como fuente central. Para GitHub Pages conserva el nombre precios.xlsx.
+Reemplaza index.html y manifest.webmanifest y sube icon.svg.

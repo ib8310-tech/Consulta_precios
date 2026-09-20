@@ -1,203 +1,34 @@
-<!doctype html>
-<html lang="es">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#1261A0">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Balbin Presupuesto">
-<link rel="apple-touch-icon" href="icon-180.png">
-<link rel="manifest" href="manifest.webmanifest">
-<title>Balbin – Presupuesto</title>
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0057A8"><link rel="manifest" href="manifest.webmanifest">
+<title>BALBIN_FARMATODO — Consulta de precios</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f4f7fa;color:#17202a}
-header{background:#1261A0;color:#fff;padding:16px;position:sticky;top:0;z-index:10}
-.brand{display:flex;align-items:center;gap:10px;margin-bottom:12px}.brand img{width:48px;height:48px;border-radius:12px}.brand b{font-size:21px}.brand span{display:block;font-size:12px;opacity:.9}
-.search{width:100%;height:50px;border:0;border-radius:14px;padding:0 16px;font-size:18px;outline:none}
-.container{max-width:760px;margin:auto;padding:14px}.status{font-size:13px;color:#5f6b76;margin:6px 2px 14px}
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}button{border:0;border-radius:12px;padding:11px 14px;font-size:15px;font-weight:700;background:#fff;color:#1261A0;box-shadow:0 1px 4px #0001}
-button.primary{background:#1261A0;color:#fff}button.danger{background:#fff0f0;color:#b42318}button.small{padding:8px 10px;font-size:14px}
-.card{background:#fff;border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:0 2px 8px #0000000c}.name{font-weight:800;font-size:17px}.lab{font-size:13px;color:#68737d;margin:4px 0 10px}
-.prices{display:flex;gap:8px;margin-bottom:12px}.price{flex:1;background:#f5f8fb;border-radius:10px;padding:8px}.price span{font-size:12px;color:#667}.price b{display:block;font-size:16px;margin-top:2px}
-.row{display:flex;gap:8px;align-items:center}.qty{width:58px;height:42px;border:1px solid #d3dbe3;border-radius:10px;text-align:center;font-size:17px}.stepper{display:flex;align-items:center;gap:5px}.stepper button{width:38px;height:42px;padding:0;font-size:22px;line-height:1;box-shadow:none;border:1px solid #d3dbe3}.stepper .qty{border:1px solid #d3dbe3}
-.mode{display:flex;flex:1}.mode button{flex:1;border:1px solid #d3dbe3;border-radius:10px;box-shadow:none;background:#f8fafc;color:#49535c}.mode button.active{background:#1261A0;color:#fff;border-color:#1261A0}.mode button:disabled{opacity:.45;cursor:not-allowed}
-.empty{text-align:center;padding:28px 10px;color:#6b7580}.order{margin-top:18px}.orderhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.order h2{font-size:19px;margin:0}
-.item{background:#fff;border-radius:14px;padding:11px 12px;margin-bottom:8px}.itemtop{display:flex;justify-content:space-between;gap:10px}.itemname{font-weight:700}.sub{font-size:13px;color:#667;margin-top:3px}
-.total{background:#17202a;color:#fff;border-radius:16px;padding:15px;margin-top:10px;display:flex;justify-content:space-between;font-size:20px;font-weight:800}.share{width:100%;margin-top:10px;background:#16a34a;color:#fff}.history-card{background:#fff;border-radius:14px;padding:12px;margin-bottom:8px}.history-top{display:flex;justify-content:space-between;gap:8px}.history-num{font-weight:800}.history-date{font-size:12px;color:#667}.history-total{font-weight:800}.status-pill{display:inline-block;padding:4px 8px;border-radius:12px;font-size:12px;font-weight:700;background:#fff4d6;color:#8a5a00}.status-sale{background:#e9f7ee;color:#137333}.status-cancel{background:#fff0f0;color:#b42318}
-.badge{display:inline-block;background:#e9f7ee;color:#137333;border-radius:20px;padding:4px 8px;font-size:12px;font-weight:700}
-</style>
-</head>
-<body>
-<header>
-  <div class="brand">
-    <img src="icon-180.png" alt="Balbin">
-    <div><b>Balbin – Presupuesto</b><span>Consulta de precios y cotización</span></div>
-  </div>
-  <input id="search" class="search" type="search" placeholder="Buscar producto..." autocomplete="off">
-</header>
-<main class="container">
-  <div class="actions">
-    <button id="refresh" class="primary">🔄 Actualizar precios</button>
-    <button id="clear" class="danger">🧹 Limpiar pantalla</button>
-  </div>
-  <div id="status" class="status">Cargando lista maestra…</div>
-  <div id="results"></div>
-
-
-  <section class="order" id="historySection">
-    <div class="orderhead"><h2>📚 Historial</h2><button id="clearHistory" class="danger small">Borrar historial</button></div>
-    <div class="actions">
-      <button class="small" id="filterAll">Todos</button>
-      <button class="small" id="filterPending">Pendientes</button>
-      <button class="small" id="filterSales">Ventas</button>
-      <button class="small" id="filterCanceled">Anulados</button>
-    </div>
-    <div id="historyItems"><div class="empty">No hay presupuestos guardados.</div></div>
-  </section>
-  <section class="order">
-    <div class="orderhead">
-      <h2>🛒 Cotización</h2>
-      <button id="emptyOrder" class="danger small">Vaciar</button>
-    </div>
-    <div id="orderItems"><div class="empty">Agrega productos para empezar.</div></div>
-    <div id="total" class="total"><span>TOTAL</span><span>S/ 0.00</span></div>
-    <button id="saveQuote" class="primary share">💾 Guardar presupuesto</button><button id="share" class="share">📲 Compartir</button>
-  </section>
-</main>
-
-<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script>
-let products=[], matches=[], order=[], modes=new Map();
-
-const $=id=>document.getElementById(id);
-const norm=s=>String(s??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/^\.+/,"").toUpperCase().replace(/[^A-Z0-9Ñ ]/g," ").replace(/\s+/g," ").trim();
-const money=n=>"S/ "+Number(n||0).toLocaleString("es-PE",{minimumFractionDigits:2,maximumFractionDigits:2});
-const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const num=v=>{if(typeof v==="number")return v;let n=parseFloat(String(v??"").replace(/S\/|,/g,"").trim());return Number.isFinite(n)?n:0};
-
-
-let history=JSON.parse(localStorage.getItem("balbin_presupuestos_v1")||"[]");
-let historyFilter="todos";
-function nextQuoteNumber(){
-  const n=Number(localStorage.getItem("balbin_quote_number")||0)+1;
-  localStorage.setItem("balbin_quote_number",String(n));
-  return "P-"+String(n).padStart(6,"0");
-}
-function saveHistory(){localStorage.setItem("balbin_presupuestos_v1",JSON.stringify(history));}
-function saveQuote(){
-  if(!order.length){alert("Primero agrega productos a la cotización.");return;}
-  const total=order.reduce((s,x)=>s+x.qty*x.price,0);
-  const q={id:nextQuoteNumber(),date:new Date().toISOString(),items:order.map(x=>({...x})),total,status:"PENDIENTE"};
-  history.unshift(q); saveHistory(); renderHistory();
-  order=[]; renderOrder(); $("search").value=""; matches=[]; $("results").innerHTML='<div class="empty">Presupuesto guardado. Puedes empezar el siguiente.</div>';
-  alert("Presupuesto "+q.id+" guardado correctamente.");
-}
-function fmtDate(iso){return new Date(iso).toLocaleString("es-PE",{dateStyle:"short",timeStyle:"short"});}
-function renderHistory(){
-  const list=history.filter(q=>historyFilter==="todos" || q.status===historyFilter);
-  if(!list.length){$("historyItems").innerHTML='<div class="empty">No hay presupuestos en este filtro.</div>';return;}
-  $("historyItems").innerHTML=list.map(q=>{
-    const cls=q.status==="VENTA"?"status-sale":q.status==="ANULADO"?"status-cancel":"";
-    return `<div class="history-card">
-      <div class="history-top"><div><div class="history-num">${q.id}</div><div class="history-date">${fmtDate(q.date)}</div></div><div class="history-total">${money(q.total)}</div></div>
-      <div style="margin-top:8px"><span class="status-pill ${cls}">${q.status}</span> · ${q.items.length} línea(s)</div>
-      <div class="actions" style="margin-top:8px">
-        <button class="small" onclick="viewQuote('${q.id}')">Ver</button>
-        ${q.status==="PENDIENTE"?`<button class="small primary" onclick="markSale('${q.id}')">✓ Convertir en venta</button><button class="small danger" onclick="cancelQuote('${q.id}')">Anular</button>`:""}
-        <button class="small" onclick="shareSaved('${q.id}')">📲 Compartir</button>
-      </div>
-    </div>`;
-  }).join("");
-}
-function viewQuote(id){
-  const q=history.find(x=>x.id===id); if(!q)return;
-  const detail=q.items.map(x=>`${x.producto.replace(/^\./,"")} — ${x.qty} ${x.mode} — ${money(x.qty*x.price)}`).join("\n");
-  alert(`${q.id}\n${fmtDate(q.date)}\nEstado: ${q.status}\n\n${detail}\n\nTOTAL: ${money(q.total)}`);
-}
-function markSale(id){const q=history.find(x=>x.id===id);if(!q)return;if(confirm("¿Convertir "+id+" en venta?")){q.status="VENTA";saveHistory();renderHistory();}}
-function cancelQuote(id){const q=history.find(x=>x.id===id);if(!q)return;if(confirm("¿Anular "+id+"?")){q.status="ANULADO";saveHistory();renderHistory();}}
-async function shareSaved(id){
- const q=history.find(x=>x.id===id);if(!q)return;
- const lines=q.items.map(x=>`${x.producto.replace(/^\./,"")} — ${x.qty} ${x.mode} — ${money(x.qty*x.price)}`);
- const text=`BALBIN – PRESUPUESTO\n${q.id} · ${fmtDate(q.date)} · ${q.status}\n\n${lines.join("\n")}\n\nTOTAL: ${money(q.total)}`;
- if(navigator.share){try{await navigator.share({title:"Balbin – Presupuesto "+q.id,text})}catch(e){}}else{window.open("https://wa.me/?text="+encodeURIComponent(text),"_blank")}
-}
-function setHistoryFilter(f){historyFilter=f;renderHistory();}
-async function loadMaster(){
-  $("status").textContent="🔄 Leyendo Excel maestro…";
-  try{
-    const res=await fetch("precios.xlsx?v="+Date.now(),{cache:"no-store"});
-    if(!res.ok) throw new Error("No se encontró precios.xlsx ("+res.status+").");
-    const buf=await res.arrayBuffer();
-    const wb=XLSX.read(buf,{type:"array"});
-    const ws=wb.Sheets[wb.SheetNames[0]];
-    const raw=XLSX.utils.sheet_to_json(ws,{defval:""});
-    if(!raw.length) throw new Error("El Excel maestro está vacío.");
-    const key=(obj,w)=>Object.keys(obj).find(k=>norm(k)===norm(w));
-    const out=[];
-    for(const r of raw){
-      const kp=key(r,"PRODUCTO"), kc=key(r,"PRECIO"), ku=key(r,"PRECIOF"), kl=key(r,"LABORATORI");
-      if(!kp||String(r[kp]).trim()==="") continue;
-      out.push({producto:String(r[kp]).trim(),precioCaja:num(kc?r[kc]:0),precioUnidad:num(ku?r[ku]:0),laboratorio:kl?String(r[kl]).trim():""});
-    }
-    if(!out.length) throw new Error("No encontré PRODUCTO en el Excel.");
-    products=out;
-    $("status").innerHTML='<span class="badge">✓ Lista maestra actualizada</span> '+products.length.toLocaleString("es-PE")+" productos";
-    render();
-  }catch(e){
-    $("status").textContent="⚠️ "+e.message+" Revisa que precios.xlsx esté en la raíz del sitio.";
-  }
-}
-
-function render(){
-  const q=norm($("search").value);
-  if(!q){$("results").innerHTML='<div class="empty">Escribe el nombre o las primeras letras del producto.</div>';return;}
-  matches=products.filter(p=>norm(p.producto).includes(q)).slice(0,80);
-  if(!matches.length){$("results").innerHTML='<div class="empty">No encontré productos con esa búsqueda.</div>';return;}
-  $("results").innerHTML=matches.map((p,i)=>{
-    const m=(Number(p.precioUnidad)===0) ? "caja" : (modes.get(p.producto)||"unidad");
-    return `<div class="card"><div class="name">${esc(p.producto.replace(/^\./,""))}</div>
-    <div class="lab">${esc(p.laboratorio||"Laboratorio no indicado")}</div>
-    <div class="prices"><div class="price"><span>${Number(p.precioUnidad)===0?"PRECIO": "UNIDAD"}</span><b>${money(Number(p.precioUnidad)===0 ? p.precioCaja : p.precioUnidad)}</b></div>
-    <div class="price"><span>CAJA</span><b>${money(p.precioCaja)}</b></div></div>
-    <div class="row"><div class="stepper"><button onclick="stepQty(${i},-1)" aria-label="Disminuir">−</button><input class="qty" id="q${i}" type="number" min="1" step="1" value="1"><button onclick="stepQty(${i},1)" aria-label="Aumentar">+</button></div>
-    <div class="mode"><button class="${m==="unidad"?"active":""}" ${Number(p.precioUnidad)===0?"disabled":""} onclick="setMode(${i},'unidad')">Unidad</button>
-    <button class="${m==="caja"?"active":""}" onclick="setMode(${i},'caja')">Caja</button></div>
-    <button class="primary small" onclick="add(${i})">Agregar</button></div></div>`;
-  }).join("");
-}
-function setMode(i,m){modes.set(matches[i].producto,m);render();}
-function stepQty(i,d){const el=$("q"+i);el.value=Math.max(1,(parseInt(el.value||"1",10)+d));}
-function add(i){
-  const p=matches[i],m=(Number(p.precioUnidad)===0) ? "caja" : (modes.get(p.producto)||"unidad"),q=Math.max(1,parseInt($("q"+i).value||"1",10));
-  const price=m==="caja"?p.precioCaja:p.precioUnidad,key=p.producto+"|"+m;
-  const x=order.find(v=>v.key===key);
-  if(x)x.qty+=q;else order.push({key,producto:p.producto,laboratorio:p.laboratorio,mode:m,qty:q,price});
-  renderOrder();
-  $("search").value=""; matches=[]; $("results").innerHTML='<div class="empty">Producto agregado. Busca el siguiente producto.</div>';
-}
-function renderOrder(){
-  if(!order.length){$("orderItems").innerHTML='<div class="empty">Agrega productos para empezar.</div>';$("total").innerHTML="<span>TOTAL</span><span>S/ 0.00</span>";return;}
-  $("orderItems").innerHTML=order.map((x,i)=>`<div class="item"><div class="itemtop"><div><div class="itemname">${esc(x.producto.replace(/^\./,""))}</div><div class="sub">${x.qty} ${x.mode}</div></div><strong>${money(x.qty*x.price)}</strong></div>
-  <div class="row" style="margin-top:8px"><button class="small" onclick="chg(${i},-1)">−</button><button class="small" onclick="chg(${i},1)">+</button><button class="danger small" onclick="del(${i})">Eliminar</button></div></div>`).join("");
-  const t=order.reduce((s,x)=>s+x.qty*x.price,0);$("total").innerHTML=`<span>TOTAL</span><span>${money(t)}</span>`;
-}
-function chg(i,d){order[i].qty+=d;if(order[i].qty<=0)order.splice(i,1);renderOrder()}
-function del(i){order.splice(i,1);renderOrder()}
-function clearAll(){$("search").value="";order=[];modes.clear();render();renderOrder();window.scrollTo({top:0,behavior:"smooth"})}
-$("search").addEventListener("input",render);
-$("clear").onclick=clearAll;$("saveQuote").onclick=saveQuote;$("filterAll").onclick=()=>setHistoryFilter("todos");$("filterPending").onclick=()=>setHistoryFilter("PENDIENTE");$("filterSales").onclick=()=>setHistoryFilter("VENTA");$("filterCanceled").onclick=()=>setHistoryFilter("ANULADO");$("clearHistory").onclick=()=>{if(confirm("¿Borrar todo el historial de este dispositivo?")){history=[];localStorage.removeItem("balbin_presupuestos_v1");renderHistory();}};
-$("emptyOrder").onclick=()=>{order=[];renderOrder()};
-$("refresh").onclick=loadMaster;
-$("share").onclick=async()=>{
- if(!order.length){alert("Primero agrega productos.");return}
- const lines=order.map(x=>`${x.producto.replace(/^\./,"")} — ${x.qty} ${x.mode} — ${money(x.qty*x.price)}`);
- const total=order.reduce((s,x)=>s+x.qty*x.price,0);
- const text="BALBIN – PRESUPUESTO\n\n"+lines.join("\n")+"\n\nTOTAL: "+money(total);
- if(navigator.share){try{await navigator.share({title:"Balbin – Presupuesto",text})}catch(e){}}else{window.open("https://wa.me/?text="+encodeURIComponent(text),"_blank")}
-};
-loadMaster();renderOrder();renderHistory();
-</script>
-</body>
-</html>
+:root{--b:#0057A8;--b2:#0072CE;--o:#F58220;--bg:#f5f7fa;--t:#18324a;--m:#66788a;--l:#e2e8ee}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--t)}
+.app{max-width:760px;margin:auto;min-height:100vh}.header{background:linear-gradient(135deg,var(--b),var(--b2));color:white;padding:24px 18px 28px;border-radius:0 0 24px 24px;box-shadow:0 5px 18px #0002}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:54px;height:54px;border-radius:15px;background:#fff;display:grid;place-items:center}.logo svg{width:37px;height:37px}
+.brand-name{font-weight:850;letter-spacing:-.6px;font-size:25px;line-height:1}.brand-name span{color:#ffd2ae}.subtitle{margin:8px 0 0 66px;font-size:14px}
+.search-wrap{margin-top:20px;position:relative}.search{width:100%;height:60px;border:0;border-radius:17px;padding:0 50px 0 18px;font-size:19px;outline:0;box-shadow:0 4px 14px #0002;color:var(--t)}.search::placeholder{color:#8292a1}
+.clear{position:absolute;right:9px;top:9px;width:42px;height:42px;border:0;border-radius:13px;background:#edf2f7;color:#66788a;font-size:22px;display:none}
+.content{padding:18px}.status{display:flex;justify-content:space-between;align-items:center;margin:0 2px 12px;color:var(--m);font-size:14px}.update{border:0;background:transparent;color:var(--b);font-weight:700;font-size:13px;padding:5px}
+.results{display:grid;gap:13px}.card{background:#fff;border:1px solid var(--l);border-radius:18px;padding:17px;box-shadow:0 2px 9px #18324a10}
+.product{font-size:18px;font-weight:850;line-height:1.25;margin-bottom:13px;text-transform:uppercase}.info{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;margin-bottom:15px}.item{min-width:0}.label{display:block;color:var(--m);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-bottom:3px}.value{font-size:17px;font-weight:750}.lab{grid-column:1/-1}
+.ok{width:100%;height:56px;border:0;border-radius:15px;background:var(--o);color:#fff;font-size:20px;font-weight:850;box-shadow:0 3px 8px #f582203f;touch-action:manipulation}.ok:active{transform:scale(.985)}
+.empty{text-align:center;padding:45px 20px;color:var(--m)}.empty .icon{font-size:42px;margin-bottom:10px}.empty strong{display:block;color:var(--t);font-size:17px;margin-bottom:6px}.loading{text-align:center;padding:28px;color:var(--m)}
+.footer{text-align:center;color:#8a98a5;font-size:11px;padding:16px 18px 28px}
+</style></head><body><div class="app">
+<header class="header"><div class="brand"><div class="logo"><svg viewBox="0 0 48 48"><rect x="15" y="3" width="18" height="42" rx="6" fill="#F58220"/><rect x="3" y="15" width="42" height="18" rx="6" fill="#F58220"/><circle cx="24" cy="24" r="5.5" fill="#fff"/></svg></div><div class="brand-name">BALBIN<span>_FARMATODO</span></div></div>
+<div class="subtitle">CONSULTA DE PRECIOS</div><div class="search-wrap"><input id="search" class="search" type="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="🔍  Buscar producto..." aria-label="Buscar producto"><button id="clear" class="clear" aria-label="Limpiar búsqueda">×</button></div></header>
+<main class="content"><div class="status"><span id="statusText">Cargando precios…</span><button id="update" class="update">↻ Actualizar precios</button></div><section id="results" class="results"><div class="loading">Cargando la lista de precios…</div></section></main>
+<div class="footer">Uso personal · Los precios se consultan desde precios.xlsx</div></div>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script>
+const DATA_URL='./precios.xlsx';let products=[];const $=id=>document.getElementById(id);const search=$('search'),results=$('results'),statusText=$('statusText'),clearBtn=$('clear');
+function money(v){if(v===null||v===undefined||v===''||Number(v)===0)return'—';const n=Number(String(v).replace(',','.'));return Number.isFinite(n)?'S/ '+n.toFixed(2):String(v)}
+function norm(v){return String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim()}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function parseRows(rows){return rows.map(r=>({product:r.PRODUCTO??r.Producto??r.producto??'',unit:r.PRECIOF??r.PrecioF??r.preciof??0,box:r.PRECIO??r.Precio??r.precio??0,lab:r.LABORATORI??r.Laboratori??r.LABORATORIO??r.Laboratorio??''})).filter(x=>String(x.product).trim())}
+async function loadPrices(){statusText.textContent='Cargando precios…';results.innerHTML='<div class="loading">Cargando la lista de precios…</div>';try{const res=await fetch(DATA_URL+'?v='+Date.now(),{cache:'no-store'});if(!res.ok)throw Error();const wb=XLSX.read(await res.arrayBuffer(),{type:'array'});const sh=wb.Sheets[wb.SheetNames[0]];products=parseRows(XLSX.utils.sheet_to_json(sh,{defval:''}));statusText.textContent=products.length.toLocaleString('es-PE')+' productos disponibles';render('')}catch(e){statusText.textContent='No se pudieron cargar los precios';results.innerHTML='<div class="empty"><div class="icon">⚠️</div><strong>No se pudo cargar la lista</strong><span>Verifica tu conexión y vuelve a intentar.</span></div>'}}
+function render(query){clearBtn.style.display=query?'block':'none';if(!query){results.innerHTML='<div class="empty"><div class="icon">🔎</div><strong>Busca un producto</strong><span>Escribe el nombre o parte del nombre para consultar su precio.</span></div>';return}const terms=norm(query).split(/\s+/).filter(Boolean);const matches=products.filter(p=>{const text=norm(p.product+' '+p.lab);return terms.every(t=>text.includes(t))}).slice(0,60);if(!matches.length){results.innerHTML='<div class="empty"><div class="icon">🔍</div><strong>No encontramos coincidencias</strong><span>Prueba con otra palabra o una parte del nombre.</span></div>';return}results.innerHTML=matches.map(p=>`<article class="card"><div class="product">${esc(p.product)}</div><div class="info"><div class="item"><span class="label">Unidad</span><span class="value">${money(p.unit)}</span></div><div class="item"><span class="label">Caja</span><span class="value">${money(p.box)}</span></div><div class="item lab"><span class="label">Laboratorio</span><span class="value">${esc(p.lab||'—')}</span></div></div><button class="ok">OK</button></article>`).join('');results.querySelectorAll('.ok').forEach(b=>b.onclick=resetAfterOk)}
+function resetAfterOk(){search.value='';render('');clearBtn.style.display='none';search.focus({preventScroll:true});window.scrollTo({top:0,behavior:'smooth'})}
+search.oninput=()=>render(search.value);clearBtn.onclick=()=>{search.value='';render('');search.focus()};$('update').onclick=()=>loadPrices();loadPrices();
+</script></body></html>
